@@ -39,7 +39,7 @@ def find_required_elements_helper(parent, by, selector, error_message):
 
 #dojoName is the name of the H2 header for the Dojo, copy it as is fom the website
 def searchDojos():
-    pwnTree = {}
+    dojoTree = {}
 
     ul_elements = find_required_elements_helper(
         driver,
@@ -101,11 +101,12 @@ def searchDojos():
                 print("Do manual entry of this href if you want to.")
                 print("-------------------------------------------------------")
 
-            pwnTree[dojoTitle] = href
+            dojoTree[dojoTitle] = href
 
-    return pwnTree
+    return dojoTree
                 
-     
+def parseModules(dojoLink):
+    pass
 
 def master():
     start("https://pwn.college/dojos")
