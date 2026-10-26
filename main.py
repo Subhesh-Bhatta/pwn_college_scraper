@@ -354,7 +354,7 @@ def validParsingIndices(pwnTree: dict[str, dict],debug:bool = True, indicesToPar
         for parsingIndex in indicesToParse:
             if "." not in parsingIndex:
 
-                #to chck if the parsing index is valid or not
+                #to check if the parsing index is valid or not
                 if parsingIndex not in validIndices:
                     if debug:
                         print(f"[validParsingIndices] Invalid Dojo index: {parsingIndex}")
@@ -375,7 +375,17 @@ def validParsingIndices(pwnTree: dict[str, dict],debug:bool = True, indicesToPar
         validParsingIndices = [index for index in validIndices
                         if "." in index]
 
+def buildHrefLookup(pwnTree: dict[str, dict], indicesToParse: list, debug:bool = True):
+    moduleLookUp = {}
+    i = 0
+    for dojoData in pwnTree.values():
+        for moduleData in dojoData["modules"].values():
+            moduleIndex = moduleData["moduleIndex"]
+            href = moduleData["href"]
 
+            moduleLookUp[moduleIndex] = href
+
+    return moduleLookUp
 
 def indicesToHrefs(pwnTree: dict[str, dict], indicesToParse: list, debug:bool = True):
     pass
@@ -443,11 +453,6 @@ def master(createJson: bool = True, checkInTerminal: bool = True, debug: bool = 
             if debug:
                 print("[master] JSON file saved successfully.")
 
-
-    # if debug:
-    #     print("[master] Passing Module data to parseContents()...")
-
-    # pwnTree = parseContents(pwnTree, debug)
     
     
     if debug:
