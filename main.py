@@ -176,11 +176,13 @@ def parseModules(pwnTree:dict[str,dict]):
                 "contents": {}
             }
 
+            end()
+
             return pwnTree
 
 
 
-def master(createJson: bool = True, checkInTerminal: bool = False):
+def master(createJson: bool = True, checkInTerminal: bool = True):
     start("https://pwn.college/dojos")
     pwnTree = searchDojos()
 
@@ -205,4 +207,4 @@ def master(createJson: bool = True, checkInTerminal: bool = False):
 
 
 
-master()
+master(createJson=True, checkInTerminal=True)

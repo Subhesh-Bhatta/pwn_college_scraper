@@ -1,0 +1,283 @@
+{
+    "Start Here": {
+        "href": "https://pwn.college/dojo/welcome",
+        "modules": {
+            "Using the Dojo": {
+                "href": "https://pwn.college/welcome/welcome/",
+                "contents": {}
+            }
+        }
+    },
+    "Linux Luminarium": {
+        "href": "https://pwn.college/dojo/linux-luminarium",
+        "modules": {}
+    },
+    "Computing 101": {
+        "href": "https://pwn.college/dojo/computing-101",
+        "modules": {}
+    },
+    "Playing With Programs": {
+        "href": "https://pwn.college/dojo/fundamentals",
+        "modules": {}
+    },
+    "Intro to Cybersecurity": {
+        "href": "https://pwn.college/dojo/intro-to-cybersecurity",
+        "modules": {}
+    },
+    "Program Security": {
+        "href": "https://pwn.college/dojo/program-security",
+        "modules": {}
+    },
+    "System Security": {
+        "href": "https://pwn.college/dojo/system-security",
+        "modules": {}
+    },
+    "Software Exploitation": {
+        "href": "https://pwn.college/dojo/software-exploitation",
+        "modules": {}
+    },
+    "pwn.college Archives": {
+        "href": "https://pwn.college/dojo/archive",
+        "modules": {}
+    },
+    "ACSAC CTFs": {
+        "href": "https://pwn.college/dojo/acsac-ctfs",
+        "modules": {}
+    },
+    "Advent of Pwn": {
+        "href": "https://pwn.college/dojo/advent-of-pwn",
+        "modules": {}
+    },
+    "ARM Architecture": {
+        "href": "https://pwn.college/dojo/arm-architecture",
+        "modules": {}
+    },
+    "Cryptographic Exploitation": {
+        "href": "https://pwn.college/dojo/cryptomania",
+        "modules": {}
+    },
+    "CTF Archive": {
+        "href": "https://pwn.college/dojo/ctf-archive",
+        "modules": {}
+    },
+    "Demo dojo": {
+        "href": "https://pwn.college/dojo/demo-dojo",
+        "modules": {}
+    },
+    "Intro to Programming Languages": {
+        "href": "https://pwn.college/dojo/intro-to-programming-languages",
+        "modules": {}
+    },
+    "The Art of the Shell": {
+        "href": "https://pwn.college/dojo/shell-lin-do",
+        "modules": {}
+    },
+    "The Quarterly Quiz": {
+        "href": "https://pwn.college/dojo/quarterly-quiz",
+        "modules": {}
+    },
+    "Windows Warzone": {
+        "href": "https://pwn.college/dojo/windows-warzone",
+        "modules": {}
+    },
+    "XNU Dojo": {
+        "href": "https://pwn.college/dojo/xnu",
+        "modules": {}
+    },
+    "Academy CTF v2": {
+        "href": "https://pwn.college/dojo/academy-ctf-v2~020f0262",
+        "modules": {}
+    },
+    "Adversarial Machine Learning Dojo": {
+        "href": "https://pwn.college/dojo/adversarial-ml-dojo~3c016843",
+        "modules": {}
+    },
+    "Amnesia's Dojo": {
+        "href": "https://pwn.college/dojo/amnesia~cd8ba09d",
+        "modules": {}
+    },
+    "Arizona CTF 2025": {
+        "href": "https://pwn.college/dojo/az-ctf-2025~6fbdc1d4",
+        "modules": {}
+    },
+    "ARM Dojo": {
+        "href": "https://pwn.college/dojo/robwaz-dojo~289c5b68",
+        "modules": {}
+    },
+    "aturt13 Dojo": {
+        "href": "https://pwn.college/dojo/aturt13-dojo~4fac9429",
+        "modules": {}
+    },
+    "Content Injection": {
+        "href": "https://pwn.college/dojo/content-injection~24cec712",
+        "modules": {}
+    },
+    "Defcon 33 Defcon Academy Dojo": {
+        "href": "https://pwn.college/dojo/dc33-dca-dojo~49335f5f",
+        "modules": {}
+    },
+    "Desert CodeSprouts": {
+        "href": "https://pwn.college/dojo/codesprouts~a2cb8d41",
+        "modules": {}
+    },
+    "DistrictCon pwn.college Challenges": {
+        "href": "https://pwn.college/dojo/districtcon~f1b3d7f0",
+        "modules": {}
+    },
+    "DOS Dojo": {
+        "href": "https://pwn.college/dojo/dos-dojo~c41cb03a",
+        "modules": {}
+    },
+    "DSU Cyber Camps": {
+        "href": "https://pwn.college/dojo/dsu-cyber-camp~aad191b4",
+        "modules": {}
+    },
+    "Fluffy’s Adventure": {
+        "href": "https://pwn.college/dojo/fluffy~ea96493b",
+        "modules": {}
+    },
+    "Fuzz Dojo": {
+        "href": "https://pwn.college/dojo/fuzz~c7f7b8c2",
+        "modules": {}
+    },
+    "GCA CTF": {
+        "href": "https://pwn.college/dojo/gca-ctf~8018193d",
+        "modules": {}
+    },
+    "Hacker History": {
+        "href": "https://pwn.college/dojo/hacker-history~43f7181b",
+        "modules": {}
+    },
+    "Hanto Dojo": {
+        "href": "https://pwn.college/dojo/hanto-dojo~8c1cc454",
+        "modules": {}
+    },
+    "Honors Dojo": {
+        "href": "https://pwn.college/dojo/honors-dojo~9d345510",
+        "modules": {}
+    },
+    "Hunter Dojo": {
+        "href": "https://pwn.college/dojo/m0nst3r-dojo~5b4ffee2",
+        "modules": {}
+    },
+    "Hydra Dojo": {
+        "href": "https://pwn.college/dojo/hydra~792145b7",
+        "modules": {}
+    },
+    "imattas dojo": {
+        "href": "https://pwn.college/dojo/imattasdojo~894900d9",
+        "modules": {}
+    },
+    "Intro to Reverse Engineering & Binary Exploitation": {
+        "href": "https://pwn.college/dojo/intro-re-pwn~5933fc84",
+        "modules": {}
+    },
+    "Kalevala": {
+        "href": "https://pwn.college/dojo/kalevala~64ddc78a",
+        "modules": {}
+    },
+    "Kernel Exercise Collection": {
+        "href": "https://pwn.college/dojo/kernel-exercise-collection~433e348b",
+        "modules": {}
+    },
+    "Kitten Playground": {
+        "href": "https://pwn.college/dojo/kitten-dojo~d5c9bdf3",
+        "modules": {}
+    },
+    "Linux Firmware Rehosting": {
+        "href": "https://pwn.college/dojo/rehosting~fbf8a0a3",
+        "modules": {}
+    },
+    "Linux Lunacy": {
+        "href": "https://pwn.college/dojo/linux-lunacy~9b739db1",
+        "modules": {}
+    },
+    "Lord of OSINT": {
+        "href": "https://pwn.college/dojo/lord-of-osint~9e1a1da1",
+        "modules": {}
+    },
+    "Pancake House": {
+        "href": "https://pwn.college/dojo/pancake-house~e3289d98",
+        "modules": {}
+    },
+    "Privilege Escalation": {
+        "href": "https://pwn.college/dojo/privilege-escalation~6d04fe7a",
+        "modules": {}
+    },
+    "Pwndamentals": {
+        "href": "https://pwn.college/dojo/pwndamentals~cfe9c1cb",
+        "modules": {}
+    },
+    "PwnTeras": {
+        "href": "https://pwn.college/dojo/pwnteras~f25dff24",
+        "modules": {}
+    },
+    "Pwntools Tutorials": {
+        "href": "https://pwn.college/dojo/pwntools~9b09c9dc",
+        "modules": {}
+    },
+    "Red Team Dojo": {
+        "href": "https://pwn.college/dojo/red-team-dojo~a9fb8d5a",
+        "modules": {}
+    },
+    "RII Router Dojo": {
+        "href": "https://pwn.college/dojo/rii-router-dojo~ae00dd3a",
+        "modules": {}
+    },
+    "The House Always Wins": {
+        "href": "https://pwn.college/dojo/thaw~84f102b7",
+        "modules": {}
+    },
+    "Tyler's Terrific Trials!": {
+        "href": "https://pwn.college/dojo/tyler~93cea8a8",
+        "modules": {}
+    },
+    "Web Security": {
+        "href": "https://pwn.college/dojo/web-security~f98637a0",
+        "modules": {}
+    },
+    "Westworld Dojo": {
+        "href": "https://pwn.college/dojo/westworld~d30d9828",
+        "modules": {}
+    },
+    "x86 Exploitation": {
+        "href": "https://pwn.college/dojo/x86-exploitation~a6fb34db",
+        "modules": {}
+    },
+    "CSE 365 - Fall 2026": {
+        "href": "https://pwn.college/dojo/cse365-f2026",
+        "modules": {}
+    },
+    "CSE 365 - Summer 2026": {
+        "href": "https://pwn.college/dojo/cse365-2026-summer",
+        "modules": {}
+    },
+    "CSE 466 - Fall 2025": {
+        "href": "https://pwn.college/dojo/cse466-f2025",
+        "modules": {}
+    },
+    "CSE 466 - Fall 2026": {
+        "href": "https://pwn.college/dojo/cse466-f2026",
+        "modules": {}
+    },
+    "CSE 598 ASOW - Fall 2026": {
+        "href": "https://pwn.college/dojo/cse598-asow-f2026",
+        "modules": {}
+    },
+    "CSE 598 AVR - Fall 2024": {
+        "href": "https://pwn.college/dojo/cse598-avr-f2024",
+        "modules": {}
+    },
+    "CSE 598 - AVR - Fall 2025": {
+        "href": "https://pwn.college/dojo/cse598-avr-f2025",
+        "modules": {}
+    },
+    "CSE 598 Rev&PA - Fall 2025": {
+        "href": "https://pwn.college/dojo/reversing-hell",
+        "modules": {}
+    },
+    "CSE 598 - Spring 2025": {
+        "href": "https://pwn.college/dojo/cse598-se-s2025",
+        "modules": {}
+    }
+}
