@@ -182,8 +182,15 @@ def searchDojos(debug: bool):
             suffix = 1
 
             while dojoKey in pwnTree:
+                if debug:
+                    print(f"[searchDojos] Duplicate Dojo title found: {dojoKey!r}")
+                    print(f"[searchDojos] Trying suffix _index{suffix}...")
                 dojoKey = f"{dojoTitle}_index{suffix}"
                 suffix += 1
+
+            if debug:
+                print(f"[searchDojos] Assigning dojo title: {dojoKey!r}")
+                print(f"[searchDojos] Assigning Dojo index: {len(pwnTree) + 1}")
 
             pwnTree[dojoKey] = {
                 "dojoIndex": len(pwnTree) + 1,
@@ -367,6 +374,8 @@ def validParsingIndices(pwnTree: dict[str, dict], debug: bool = True, indicesToP
         print(f"[validParsingIndices] Found {len(validIndices)} valid indices.")
 
     validParsingIndices = []
+
+
 
     if indicesToParse is not None:
         if debug:
