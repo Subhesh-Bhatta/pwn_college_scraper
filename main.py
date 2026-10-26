@@ -335,7 +335,10 @@ def parseModules(pwnTree: dict[str, dict], debug: bool):
 
     return pwnTree
 
-def parseContents(pwnTree: dict[str, dict], debug: bool):
+# the | None = None basically says its either a set or None
+# we can also use modulesToParse = None directly, but we'd lost the type hint that its a set
+# also can't do modulesToParse: set[str] = None since, None is not a set
+def parseContents(pwnTree: dict, debug: bool = False, modulesToParse: set[str] | None = None):
     for dojoName, dojoData in pwnTree.items():
 
         if debug:
