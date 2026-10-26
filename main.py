@@ -7,7 +7,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementNotInteractableException
 from pprint import pprint
 import json
-
+import os
 
 def start(url, debug: bool = False):
     global driver
@@ -428,6 +428,8 @@ def buildHrefLookup(pwnTree: dict[str, dict], debug: bool = True, checkInTermina
 
     if debug:
         print(f"[buildHrefLookup] Lookup contains {len(moduleLookup)} modules.")
+
+    return moduleLookup
 
 
 def indicesToHrefs(pwnTree: dict[str, dict], indicesToParse: list, debug:bool = True):
