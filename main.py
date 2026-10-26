@@ -411,17 +411,24 @@ def validParsingIndices(pwnTree: dict[str, dict], debug: bool = True, indicesToP
     return validParsingIndices
 
 
-def buildHrefLookup(pwnTree: dict[str, dict], indicesToParse: list, debug:bool = True):
-    moduleLookUp = {}
-    i = 0
+
+def buildHrefLookup(pwnTree: dict[str, dict], debug: bool = True, checkInTerminal: bool = False) -> dict[str, str]:
+
+    if debug:
+        print("[buildHrefLookup] Building module index-to-href lookup...")
+
+    moduleLookup = {}
+
     for dojoData in pwnTree.values():
         for moduleData in dojoData["modules"].values():
-            moduleIndex = moduleData["moduleIndex"]
+            moduleIndex = str(moduleData["moduleIndex"])
             href = moduleData["href"]
 
-            moduleLookUp[moduleIndex] = href
+            moduleLookup[moduleIndex] = href
 
-    return moduleLookUp
+    if debug:
+        print(f"[buildHrefLookup] Lookup contains {len(moduleLookup)} modules.")
+
 
 def indicesToHrefs(pwnTree: dict[str, dict], indicesToParse: list, debug:bool = True):
     pass
