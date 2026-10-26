@@ -65,7 +65,7 @@ def find_required_elements_helper(parent, by, selector, error_message):
         raise NoSuchElementException(error_message) from None
 
 
-# dojoName is the name of the H2 header for the Dojo, copy it as is from the website
+
 def searchDojos(debug: bool):
     if debug:
         print("[searchDojos] Starting Dojo extraction...")
@@ -177,14 +177,22 @@ def searchDojos(debug: bool):
                 print("Do manual entry of this href if you want to.")
                 print("-------------------------------------------------------")
 
-            pwnTree[dojoTitle] = {
+            # Add an index suffix only if the Dojo title already exists
+            dojoKey = dojoTitle
+            suffix = 1
+
+            while dojoKey in pwnTree:
+                dojoKey = f"{dojoTitle}_index{suffix}"
+                suffix += 1
+
+            pwnTree[dojoKey] = {
                 "dojoIndex": len(pwnTree) + 1,
                 "href": href,
                 "modules": {}
             }
 
             if debug:
-                print(f"[searchDojos] Added Dojo: {dojoTitle!r}")
+                print(f"[searchDojos] Added Dojo: {dojoKey!r}")
                 print(f"[searchDojos] Dojo URL: {href}")
                 print(f"[searchDojos] Current number of Dojos: {len(pwnTree)}")
 
@@ -194,6 +202,7 @@ def searchDojos(debug: bool):
         print("-------------------------------------------------------")
 
     return pwnTree
+
 
 
 def parseModules(pwnTree: dict[str, dict], debug: bool):
@@ -553,6 +562,6 @@ master(
     createJson=True,
     checkInTerminal=True,
     debug=True,
-    parseHrefsAgain=False,
+    parseHrefsAgain=True,
     indicesToParse={"1", "2.3"}
 )
