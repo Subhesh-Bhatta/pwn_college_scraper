@@ -212,6 +212,7 @@ def searchDojos(debug: bool):
 
 
 
+
 def parseModules(pwnTree: dict[str, dict], debug: bool):
     if debug:
         print("[parseModules] Starting module extraction...")
@@ -334,16 +335,32 @@ def parseModules(pwnTree: dict[str, dict], debug: bool):
                 print("Do manual entry of this href if you want to.")
                 print("-------------------------------------------------------")
 
-            value["modules"][moduleTitle] = {
+            # Add an index suffix only if the module title already exists
+            # Same code as dojoTitle portion
+            moduleKey = moduleTitle
+            suffix = 1
+
+            while moduleKey in value["modules"]:
+                if debug:
+                    print(f"[searchDojos] Duplicate Dojo title found: {moduleKey!r}")
+                    print(f"[searchDojos] Trying suffix _index{suffix}...")
+                moduleKey = f"{moduleTitle}_index{suffix}"
+                suffix += 1
+
+            if debug:
+                print(f"[searchDojos] Assigning dojo title: {moduleKey!r}")
+                print(f"[searchDojos] Assigning Dojo index: {len(pwnTree) + 1}")
+
+            value["modules"][moduleKey] = {
                 "moduleIndex": f"{value['dojoIndex']}.{module_counter}",
                 "href": href,
                 "contents": {}
             }
 
-            module_counter+=1
+            module_counter += 1
 
             if debug:
-                print(f"[parseModules] Added module: {moduleTitle!r}")
+                print(f"[parseModules] Added module: {moduleKey!r}")
                 print(f"[parseModules] Module URL: {href}")
                 print(
                     f"[parseModules] Modules currently stored for "
@@ -351,6 +368,7 @@ def parseModules(pwnTree: dict[str, dict], debug: bool):
                 )
 
     return pwnTree
+
 
 # the | None = None basically says its either a set or None
 # we can also use indicesToParse = None directly, but we'd lost the type hint that its a set
