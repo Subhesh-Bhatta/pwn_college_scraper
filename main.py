@@ -434,79 +434,122 @@ def indicesToHrefs(pwnTree: dict[str, dict], indicesToParse: list, debug:bool = 
     pass
 
 
-def master(createJson: bool = True, checkInTerminal: bool = True, debug: bool = True, parseHrefsAgain: bool = True):
-
+def master(
+    createJson: bool = True,
+    checkInTerminal: bool = True,
+    debug: bool = True,
+    parseHrefsAgain: bool = True,
+    indicesToParse: set[str] | None = None
+):
     pwnTree = {}
+    driverStarted = False
+
+    if debug:
+        print("=" * 60)
+        print("[master] Starting scraper workflow.")
+        print(f"[master] Debug enabled: {debug}")
+        print(f"[master] Terminal output enabled: {checkInTerminal}")
+        print(f"[master] JSON output enabled: {createJson}")
+        print(f"[master] Re-scrape hrefs: {parseHrefsAgain}")
+        print("=" * 60)
+
     if not parseHrefsAgain:
         try:
             with open("Check/pwnTree.json", "r", encoding="utf-8") as file:
                 pwnTree = json.load(file)
 
             if debug:
-                print("[master] Loaded pwnTree from JSON.")
+                print("[master] Successfully loaded pwnTree.json.")
 
         except FileNotFoundError:
             if debug:
-                print("[master] JSON file not found. Scraping URLs instead.")
+                print("[master] JSON file not found; scraping URLs instead.")
 
             parseHrefsAgain = True
-   
-    if parseHrefsAgain:
 
+    if parseHrefsAgain:
         if debug:
-            print("[master] Starting scraping process...")
-            print(f"[master] Debug enabled: {debug}")
-            print(f"[master] Terminal output enabled: {checkInTerminal}")
-            print(f"[master] JSON output enabled: {createJson}")
-            print("=======================================================")
+            print("[master] Starting browser and scraping Dojos...")
 
         start("https://pwn.college/dojos", debug)
+        driverStarted = True
 
         pwnTree = searchDojos(debug)
 
         if checkInTerminal:
-            if debug:
-                print("[master] Printing the extracted Dojo entries...")
-
-            for key, value in pwnTree.items():
-                print(f"{key}: {value}")
-
-            print("------------------------------------------------------")
+            print("[master] Extracted Dojos:")
+            pprint(pwnTree)
+            print("-" * 55)
 
         if debug:
-            print("[master] Passing Dojo data to parseModules()...")
+            print("[master] Parsing modules...")
 
         pwnTree = parseModules(pwnTree, debug)
 
         if checkInTerminal:
-            if debug:
-                print("[master] Printing the resulting pwnTree...")
-
+            print("[master] Resulting pwnTree:")
             pprint(pwnTree)
-            print("------------------------------------------------------")
-
+            print("-" * 55)
 
         if createJson:
+            os.makedirs("Check", exist_ok=True)
+
             if debug:
-                print("[master] Saving pwnTree to 'Check/pwnTree.json'...")
+                print("[master] Saving pwnTree.json...")
 
             with open("Check/pwnTree.json", "w", encoding="utf-8") as file:
                 json.dump(pwnTree, file, indent=4, ensure_ascii=False)
 
             if debug:
-                print("[master] JSON file saved successfully.")
-
-    
-    
-    if debug:
-        print("[master] Waiting for 2 seconds before closing...")
-
-    time.sleep(2)
-    end(debug)
+                print("[master] JSON saved successfully.")
 
     if debug:
-        print("[master] Scraping process finished.")
-        print("=======================================================")
+        print("[master] Validating requested module indices...")
+
+    selectedIndices = validParsingIndices(
+        pwnTree,
+        debug=debug,
+        indicesToParse=indicesToParse
+    )
+
+    moduleLookup = buildHrefLookup(
+        pwnTree,
+        debug=debug,
+        checkInTerminal=checkInTerminal
+    )
+
+    selectedHrefs = {
+        index: moduleLookup[index]
+        for index in selectedIndices
+        if index in moduleLookup
+    }
+
+    if checkInTerminal:
+        print("[master] Selected modules and their hrefs:")
+        pprint(selectedHrefs)
+        print("-" * 55)
+
+    # Call your content-parsing function here when ready.
+    # For example:
+    # for index, href in selectedHrefs.items():
+    #     parseContent(href, debug)
+
+    if driverStarted:
+        if debug:
+            print("[master] Waiting 2 seconds before closing browser...")
+
+        time.sleep(2)
+        end(debug)
+
+    if debug:
+        print("[master] Workflow finished.")
+        print("=" * 60)
 
 
-master(createJson=True, checkInTerminal=True, debug=True, parseHrefsAgain=False)
+master(
+    createJson=True,
+    checkInTerminal=True,
+    debug=True,
+    parseHrefsAgain=False,
+    indicesToParse={"1", "2.3"}
+)
