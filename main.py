@@ -177,6 +177,7 @@ def searchDojos(debug: bool):
                 print("-------------------------------------------------------")
 
             pwnTree[dojoTitle] = {
+                "dojoIndex": len(pwnTree) + 1,
                 "href": href,
                 "modules": {}
             }
@@ -316,6 +317,7 @@ def parseModules(pwnTree: dict[str, dict], debug: bool):
                 print("-------------------------------------------------------")
 
             value["modules"][moduleTitle] = {
+                "moduleIndex": f"{value['dojoIndex']}.{len(value['modules']) + 1}",
                 "href": href,
                 "contents": {}
             }
