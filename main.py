@@ -338,7 +338,47 @@ def parseModules(pwnTree: dict[str, dict], debug: bool):
 # the | None = None basically says its either a set or None
 # we can also use indicesToParse = None directly, but we'd lost the type hint that its a set
 # also can't do indicesToParse: set[str] = None since, None is not a set
+def validParsingIndices(pwnTree: dict[str, dict],debug:bool = True, indicesToParse: set[str] | None = None):
+    validIndices = []
+    # building a set of validIndices
+    for dojoData in pwnTree.values():
+        validIndices.append(str(dojoData["dojoIndex"])) 
 
+        for moduleData in dojoData["modules"].values():
+            validIndices.append(str(moduleData["moduleIndex"]))
+
+    validIndicesLength = len(validIndices)
+
+    validParsingIndices = []
+    if indicesToParse is not None:
+        for parsingIndex in indicesToParse:
+            if "." not in parsingIndex:
+
+                #to chck if the parsing index is valid or not
+                if parsingIndex not in validIndices:
+                    if debug:
+                        print(f"[validParsingIndices] Invalid Dojo index: {parsingIndex}")
+                    continue
+
+                positionOfDojoIndex  = validIndices.index(parsingIndex)
+                for i in range(positionOfDojoIndex+1, validIndicesLength):
+                    if not validIndices[i].startswith(parsingIndex + "."):
+                        break
+                    validParsingIndices.append(validIndices[i])
+            else:
+                if parsingIndex in validIndices:
+                    validParsingIndices.append(parsingIndex)
+                elif debug:
+                    print(f"[validParsingIndices] Invalid module index: {parsingIndex}")
+   
+    else:
+        validParsingIndices = [index for index in validIndices
+                        if "." in index]
+
+
+
+def indicesToHrefs(pwnTree: dict[str, dict], indicesToParse: list, debug:bool = True):
+    pass
 
 
 def master(createJson: bool = True, checkInTerminal: bool = True, debug: bool = True, parseHrefsAgain: bool = True):
