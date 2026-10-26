@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementNotInteractableException
+from pprint import pprint
 
 
 def start(url):
@@ -39,7 +40,7 @@ def find_required_elements_helper(parent, by, selector, error_message):
 
 #dojoName is the name of the H2 header for the Dojo, copy it as is fom the website
 def searchDojos():
-    dojoTree = {}
+    pwnTree = {}
 
     ul_elements = find_required_elements_helper(
         driver,
@@ -101,22 +102,98 @@ def searchDojos():
                 print("Do manual entry of this href if you want to.")
                 print("-------------------------------------------------------")
 
-            dojoTree[dojoTitle] = href
+            pwnTree[dojoTitle] = {
+                "href": href,
+                "modules": {}
+            }
 
-    return dojoTree
+    return pwnTree
                 
-def parseModules(dojoLink):
-    pass
+def parseModules(pwnTree:dict[str,dict]):
+    for key,value in pwnTree.items():
+        driver.get(value["href"])
+        ul_element_modules = find_required_element_helper(
+            driver,
+            By.CSS_SELECTOR,
+            "ul.card-list",
+            ("The ul element having class 'card-list' doesn't exist inside the webpage." 
+            "First check if the link is correct, " 
+            "then check if the first ul element having class 'class-list',"
+            "is actuallly the ul with modules inside it or not."
+            "-------------------------------------------------------------------"))
+        
+        a_elements = find_required_elements_helper(
+            ul_element_modules,
+            By.TAG_NAME,
+            "a",
+            """The anchor tags inside the ul elements don't exist.
+            Check the webpage and inspect the website to see
+            whether the links are still inside anchor tags.
+            ---------------------------------------------------------------"""
+        )
 
-def master():
+        #same code as the one above in searchDojos functions 
+        for each_a_element in a_elements:
+            href = each_a_element.get_attribute("href")
+
+            # Skip elements that do not have a URL
+            if not href:
+                continue
+
+            try:
+                card_title_element = each_a_element.find_element(
+                    By.CLASS_NAME,
+                    "card-title"
+                )
+
+                moduleTitle = card_title_element.text.strip()
+
+                # Use the URL's last path segment if the title is empty
+                if not moduleTitle:
+                    raise NoSuchElementException("The card title is empty.")
+
+            except NoSuchElementException:
+                print(f"There is no title for href: {href}")
+                print("Using the last path segment of the URL as the title.")
+
+                path_segments = [
+                    segment
+                    for segment in urlparse(href).path.split("/") if segment
+                ]
+
+                moduleTitle = (
+                    unquote(path_segments[-1])
+                    if path_segments
+                    else href
+                )
+
+                print("Do manual entry of this href if you want to.")
+                print("-------------------------------------------------------")
+
+            value["modules"][moduleTitle] = {
+                "href": href,
+                "contents": {}
+            }
+
+            return pwnTree
+
+
+
+def master(createJson: bool = True, checkInTerminal: bool = False):
     start("https://pwn.college/dojos")
-    dojosDict = searchDojos()
+    pwnTree = searchDojos()
 
-    #Printing output of dojos
-    for key, value in dojosDict.items():
-        print(f"{key}: {value}")
-    print("------------------------------------------------------")
-    
+    if checkInTerminal:
+        for key, value in pwnTree.items():
+            print(f"{key}: {value}")
+        print("------------------------------------------------------")
+
+    pwnTree = parseModules(pwnTree)
+
+    if checkInTerminal:
+        pprint(pwnTree)
+        print("------------------------------------------------------")
+
     time.sleep(2)
     end()
 
