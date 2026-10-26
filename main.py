@@ -190,7 +190,6 @@ def searchDojos(debug: bool):
 
             if debug:
                 print(f"[searchDojos] Assigning dojo title: {dojoKey!r}")
-                print(f"[searchDojos] Assigning Dojo index: {len(pwnTree) + 1}")
 
             pwnTree[dojoKey] = {
                 "dojoIndex": len(pwnTree) + 1,
@@ -342,14 +341,13 @@ def parseModules(pwnTree: dict[str, dict], debug: bool):
 
             while moduleKey in value["modules"]:
                 if debug:
-                    print(f"[searchDojos] Duplicate Dojo title found: {moduleKey!r}")
+                    print(f"[searchDojos] Duplicate Module title found: {moduleKey!r}")
                     print(f"[searchDojos] Trying suffix _index{suffix}...")
                 moduleKey = f"{moduleTitle}_index{suffix}"
                 suffix += 1
 
             if debug:
-                print(f"[searchDojos] Assigning dojo title: {moduleKey!r}")
-                print(f"[searchDojos] Assigning Dojo index: {len(pwnTree) + 1}")
+                print(f"[searchDojos] Assigning module title: {moduleKey!r}")
 
             value["modules"][moduleKey] = {
                 "moduleIndex": f"{value['dojoIndex']}.{module_counter}",
@@ -469,10 +467,6 @@ def buildHrefLookup(pwnTree: dict[str, dict], debug: bool = True, checkInTermina
     return moduleLookup
 
 
-def indicesToHrefs(pwnTree: dict[str, dict], indicesToParse: list, debug:bool = True):
-    pass
-
-
 def master(
     createJson: bool = True,
     checkInTerminal: bool = True,
@@ -589,6 +583,6 @@ master(
     createJson=True,
     checkInTerminal=True,
     debug=True,
-    parseHrefsAgain=True,
+    parseHrefsAgain=False,
     indicesToParse={"1", "2.3"}
 )
