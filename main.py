@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementNotInteractableException
 from pprint import pprint
+import json
 
 
 def start(url):
@@ -193,6 +194,10 @@ def master(createJson: bool = True, checkInTerminal: bool = False):
     if checkInTerminal:
         pprint(pwnTree)
         print("------------------------------------------------------")
+
+    if createJson:
+        with open("Check/pwnTree.json", "w", encoding="utf-8") as file:
+            json.dump(pwnTree, file, indent=4, ensure_ascii=False)
 
     time.sleep(2)
     end()
