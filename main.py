@@ -338,42 +338,78 @@ def parseModules(pwnTree: dict[str, dict], debug: bool):
 # the | None = None basically says its either a set or None
 # we can also use indicesToParse = None directly, but we'd lost the type hint that its a set
 # also can't do indicesToParse: set[str] = None since, None is not a set
-def validParsingIndices(pwnTree: dict[str, dict],debug:bool = True, indicesToParse: set[str] | None = None):
+
+def validParsingIndices(pwnTree: dict[str, dict], debug: bool = True, indicesToParse: set[str] | None = None
+) -> list[str]:
+
+    if debug:
+        print("[validParsingIndices] Building list of valid indices...")
+
     validIndices = []
-    # building a set of validIndices
+
     for dojoData in pwnTree.values():
-        validIndices.append(str(dojoData["dojoIndex"])) 
+        validIndices.append(str(dojoData["dojoIndex"]))
 
         for moduleData in dojoData["modules"].values():
             validIndices.append(str(moduleData["moduleIndex"]))
 
-    validIndicesLength = len(validIndices)
+    if debug:
+        print(f"[validParsingIndices] Found {len(validIndices)} valid indices.")
 
     validParsingIndices = []
+
     if indicesToParse is not None:
+        if debug:
+            print(f"[validParsingIndices] Requested indices: {indicesToParse}")
+
+        validIndicesLength = len(validIndices)
+
         for parsingIndex in indicesToParse:
             if "." not in parsingIndex:
 
-                #to check if the parsing index is valid or not
                 if parsingIndex not in validIndices:
                     if debug:
                         print(f"[validParsingIndices] Invalid Dojo index: {parsingIndex}")
                     continue
 
-                positionOfDojoIndex  = validIndices.index(parsingIndex)
-                for i in range(positionOfDojoIndex+1, validIndicesLength):
+                if debug:
+                    print(f"[validParsingIndices] Expanding Dojo {parsingIndex}...")
+
+                positionOfDojoIndex = validIndices.index(parsingIndex)
+
+                for i in range(positionOfDojoIndex + 1, validIndicesLength):
                     if not validIndices[i].startswith(parsingIndex + "."):
                         break
+
                     validParsingIndices.append(validIndices[i])
+
             else:
                 if parsingIndex in validIndices:
                     validParsingIndices.append(parsingIndex)
+
+                    if debug:
+                        print(f"[validParsingIndices] Accepted module index: {parsingIndex}")
+
                 elif debug:
                     print(f"[validParsingIndices] Invalid module index: {parsingIndex}")
-   
+
     else:
-        validParsingIndices = [index for index in validIndices
-                        if "." in index]
+        validParsingIndices = [
+            index for index in validIndices
+            if "." in index
+        ]
+
+        if debug:
+            print("[validParsingIndices] No selection specified; selecting all modules.")
+
+    # Removing duplicates while preserving order
+    validParsingIndices = list(dict.fromkeys(validParsingIndices))
+
+    if debug:
+        print(f"[validParsingIndices] Selected {len(validParsingIndices)} modules.")
+
+    return validParsingIndices
+
 
 def buildHrefLookup(pwnTree: dict[str, dict], indicesToParse: list, debug:bool = True):
     moduleLookUp = {}
