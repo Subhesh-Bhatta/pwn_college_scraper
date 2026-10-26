@@ -357,6 +357,21 @@ def parseContents(pwnTree: dict[str, dict], debug: bool):
 
 
 def master(createJson: bool = True, checkInTerminal: bool = True, debug: bool = True, parseHrefsAgain: bool = True):
+
+    pwnTree = {}
+    if not parseHrefsAgain:
+        try:
+            with open("Check/pwnTree.json", "r", encoding="utf-8") as file:
+                pwnTree = json.load(file)
+
+            if debug:
+                print("[master] Loaded pwnTree from JSON.")
+
+        except FileNotFoundError:
+            if debug:
+                print("[master] JSON file not found. Scraping URLs instead.")
+
+            parseHrefsAgain = True
    
     if parseHrefsAgain:
 
@@ -402,10 +417,6 @@ def master(createJson: bool = True, checkInTerminal: bool = True, debug: bool = 
 
             if debug:
                 print("[master] JSON file saved successfully.")
-
-    if not parseHrefsAgain:
-        with open('Check/pwnTree.json', 'r', encoding='utf-8') as file:
-            pwnTree = json.load(file)
 
 
     if debug:
