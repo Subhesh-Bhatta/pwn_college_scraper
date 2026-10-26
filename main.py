@@ -336,27 +336,9 @@ def parseModules(pwnTree: dict[str, dict], debug: bool):
     return pwnTree
 
 # the | None = None basically says its either a set or None
-# we can also use modulesToParse = None directly, but we'd lost the type hint that its a set
-# also can't do modulesToParse: set[str] = None since, None is not a set
-def parseContents(pwnTree: dict, debug: bool = False, modulesToParse: set[str] | None = None):
-    for dojoName, dojoData in pwnTree.items():
+# we can also use indicesToParse = None directly, but we'd lost the type hint that its a set
+# also can't do indicesToParse: set[str] = None since, None is not a set
 
-        if debug:
-            print(f"Processing Dojo: {dojoName}")
-
-        for moduleName, moduleData in dojoData["modules"].items():
-
-            moduleHref = moduleData["href"]
-
-            if debug:
-                print(f"  Processing module: {moduleName}")
-                print(f"  Module URL: {moduleHref}")
-
-            driver.get(moduleHref)
-
-            # Parse the contents of this module here.
-
-    return pwnTree
 
 
 def master(createJson: bool = True, checkInTerminal: bool = True, debug: bool = True, parseHrefsAgain: bool = True):
@@ -422,10 +404,10 @@ def master(createJson: bool = True, checkInTerminal: bool = True, debug: bool = 
                 print("[master] JSON file saved successfully.")
 
 
-    if debug:
-        print("[master] Passing Module data to parseContents()...")
+    # if debug:
+    #     print("[master] Passing Module data to parseContents()...")
 
-    pwnTree = parseContents(pwnTree, debug)
+    # pwnTree = parseContents(pwnTree, debug)
     
     
     if debug:
