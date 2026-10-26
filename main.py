@@ -9,19 +9,42 @@ from pprint import pprint
 import json
 
 
-def start(url):
+def start(url, debug: bool = False):
     global driver
 
+    if debug:
+        print("[START] Initializing Chrome WebDriver...")
+
     driver = webdriver.Chrome()
+
+    if debug:
+        print(f"[START] Navigating to: {url}")
+
     driver.get(url)
 
-def end():
+    if debug:
+        print(f"[START] Webpage loaded: {driver.current_url}")
+        print("[START] WebDriver initialization complete.")
+        print("-------------------------------------------------------")
+
+
+def end(debug: bool = False):
     """
     Function to quit the WebDriver, closing the browser window.
     """
     global driver
+
+    if debug:
+        print("[END] Attempting to close the WebDriver...")
+
     if driver:
         driver.quit()
+
+        if debug:
+            print("[END] WebDriver closed successfully.")
+    elif debug:
+        print("[END] No active WebDriver was found.")
+
 
 # this is only done so that I can print multiple error messages,
 # since there's the same NoSuchElementException for each every element not found error
@@ -31,30 +54,47 @@ def find_required_element_helper(parent, by, selector, error_message):
     except NoSuchElementException:
         raise NoSuchElementException(error_message) from None
 
-#same logic as find_required_element_helper, just for multiple elements,
-#uses find_elements instead of find_element
+
+# same logic as find_required_element_helper, just for multiple elements,
+# uses find_elements instead of find_element
 def find_required_elements_helper(parent, by, selector, error_message):
     try:
         return parent.find_elements(by, selector)
     except NoSuchElementException:
         raise NoSuchElementException(error_message) from None
 
-#dojoName is the name of the H2 header for the Dojo, copy it as is fom the website
-def searchDojos():
+
+# dojoName is the name of the H2 header for the Dojo, copy it as is from the website
+def searchDojos(debug: bool):
+    if debug:
+        print("[searchDojos] Starting Dojo extraction...")
+
     pwnTree = {}
+
+    if debug:
+        print("[searchDojos] Searching for elements matching 'ul.card-list'...")
 
     ul_elements = find_required_elements_helper(
         driver,
         By.CSS_SELECTOR,
         "ul.card-list",
-        """The ul elements inside the webpage doesn't exit.
+        """The ul elements inside the webpage doesn't exist.
         First check if the webpage is correct,
         then inspect the website and see if the dojos are inside a ul tag, or other tags,
-        and change the paramter accordingly.
+        and change the parameter accordingly.
         -----------------------------------------------------------------"""
     )
 
-    for each_ul_element in ul_elements:
+    if debug:
+        print(f"[searchDojos] Found {len(ul_elements)} ul.card-list element(s).")
+
+        if not ul_elements:
+            print("[searchDojos] WARNING: No Dojo card lists were found.")
+
+    for ul_index, each_ul_element in enumerate(ul_elements, start=1):
+
+        if debug:
+            print(f"\n[searchDojos] Processing card list {ul_index}/{len(ul_elements)}...")
 
         a_elements = find_required_elements_helper(
             each_ul_element,
@@ -66,14 +106,35 @@ def searchDojos():
             ---------------------------------------------------------------"""
         )
 
-        for each_a_element in a_elements:
+        if debug:
+            print(f"[searchDojos] Found {len(a_elements)} anchor tag(s) in this card list.")
+
+            if not a_elements:
+                print("[searchDojos] WARNING: This card list contains no anchor tags.")
+
+        for a_index, each_a_element in enumerate(a_elements, start=1):
+
+            if debug:
+                print(
+                    f"\n[searchDojos] Processing anchor "
+                    f"{a_index}/{len(a_elements)}..."
+                )
+
             href = each_a_element.get_attribute("href")
+
+            if debug:
+                print(f"[searchDojos] Extracted href: {href!r}")
 
             # Skip elements that do not have a URL
             if not href:
+                if debug:
+                    print("[searchDojos] Skipping anchor because it has no URL.")
                 continue
 
             try:
+                if debug:
+                    print("[searchDojos] Searching for the element with class 'card-title'...")
+
                 card_title_element = each_a_element.find_element(
                     By.CLASS_NAME,
                     "card-title"
@@ -81,17 +142,26 @@ def searchDojos():
 
                 dojoTitle = card_title_element.text.strip()
 
+                if debug:
+                    print(f"[searchDojos] Extracted Dojo title: {dojoTitle!r}")
+
                 # Use the URL's last path segment if the title is empty
                 if not dojoTitle:
+                    if debug:
+                        print("[searchDojos] WARNING: The card title is empty.")
                     raise NoSuchElementException("The card title is empty.")
 
             except NoSuchElementException:
+                if debug:
+                    print(f"[searchDojos] WARNING: No usable title found for href: {href}")
+
                 print(f"There is no title for href: {href}")
                 print("Using the last path segment of the URL as the title.")
 
                 path_segments = [
                     segment
-                    for segment in urlparse(href).path.split("/") if segment
+                    for segment in urlparse(href).path.split("/")
+                    if segment
                 ]
 
                 dojoTitle = (
@@ -99,6 +169,9 @@ def searchDojos():
                     if path_segments
                     else href
                 )
+
+                if debug:
+                    print(f"[searchDojos] Fallback Dojo title: {dojoTitle!r}")
 
                 print("Do manual entry of this href if you want to.")
                 print("-------------------------------------------------------")
@@ -108,21 +181,59 @@ def searchDojos():
                 "modules": {}
             }
 
+            if debug:
+                print(f"[searchDojos] Added Dojo: {dojoTitle!r}")
+                print(f"[searchDojos] Dojo URL: {href}")
+                print(f"[searchDojos] Current number of Dojos: {len(pwnTree)}")
+
+    if debug:
+        print("\n[searchDojos] Dojo extraction complete.")
+        print(f"[searchDojos] Total Dojos extracted: {len(pwnTree)}")
+        print("-------------------------------------------------------")
+
     return pwnTree
-                
-def parseModules(pwnTree:dict[str,dict]):
-    for key,value in pwnTree.items():
+
+
+def parseModules(pwnTree: dict[str, dict], debug: bool):
+    if debug:
+        print("[parseModules] Starting module extraction...")
+        print(f"[parseModules] Total Dojos to process: {len(pwnTree)}")
+
+    for dojo_index, (key, value) in enumerate(pwnTree.items(), start=1):
+
+        if debug:
+            print(
+                f"\n[parseModules] Processing Dojo "
+                f"{dojo_index}/{len(pwnTree)}: {key!r}"
+            )
+            print(f"[parseModules] Dojo URL: {value['href']}")
+
+        if debug:
+            print("[parseModules] Navigating to the Dojo webpage...")
+
         driver.get(value["href"])
+
+        if debug:
+            print(f"[parseModules] Webpage loaded: {driver.current_url}")
+            print("[parseModules] Searching for the module list ('ul.card-list')...")
+
         ul_element_modules = find_required_element_helper(
             driver,
             By.CSS_SELECTOR,
             "ul.card-list",
-            ("The ul element having class 'card-list' doesn't exist inside the webpage." 
-            "First check if the link is correct, " 
-            "then check if the first ul element having class 'class-list',"
-            "is actuallly the ul with modules inside it or not."
-            "-------------------------------------------------------------------"))
-        
+            (
+                "The ul element having class 'card-list' doesn't exist inside the webpage. "
+                "First check if the link is correct, "
+                "then check if the first ul element having class 'card-list' "
+                "is actually the ul with modules inside it or not. "
+                "-------------------------------------------------------------------"
+            )
+        )
+
+        if debug:
+            print("[parseModules] Module list found.")
+            print("[parseModules] Searching for anchor tags inside the module list...")
+
         a_elements = find_required_elements_helper(
             ul_element_modules,
             By.TAG_NAME,
@@ -133,15 +244,36 @@ def parseModules(pwnTree:dict[str,dict]):
             ---------------------------------------------------------------"""
         )
 
-        #same code as the one above in searchDojos functions 
-        for each_a_element in a_elements:
+        if debug:
+            print(f"[parseModules] Found {len(a_elements)} module anchor tag(s).")
+
+            if not a_elements:
+                print("[parseModules] WARNING: No module anchor tags were found.")
+
+        # same code as the one above in searchDojos function
+        for a_index, each_a_element in enumerate(a_elements, start=1):
+
+            if debug:
+                print(
+                    f"\n[parseModules] Processing module anchor "
+                    f"{a_index}/{len(a_elements)}..."
+                )
+
             href = each_a_element.get_attribute("href")
+
+            if debug:
+                print(f"[parseModules] Extracted href: {href!r}")
 
             # Skip elements that do not have a URL
             if not href:
+                if debug:
+                    print("[parseModules] Skipping anchor because it has no URL.")
                 continue
 
             try:
+                if debug:
+                    print("[parseModules] Searching for the element with class 'card-title'...")
+
                 card_title_element = each_a_element.find_element(
                     By.CLASS_NAME,
                     "card-title"
@@ -149,17 +281,26 @@ def parseModules(pwnTree:dict[str,dict]):
 
                 moduleTitle = card_title_element.text.strip()
 
+                if debug:
+                    print(f"[parseModules] Extracted module title: {moduleTitle!r}")
+
                 # Use the URL's last path segment if the title is empty
                 if not moduleTitle:
+                    if debug:
+                        print("[parseModules] WARNING: The card title is empty.")
                     raise NoSuchElementException("The card title is empty.")
 
             except NoSuchElementException:
+                if debug:
+                    print(f"[parseModules] WARNING: No usable title found for href: {href}")
+
                 print(f"There is no title for href: {href}")
                 print("Using the last path segment of the URL as the title.")
 
                 path_segments = [
                     segment
-                    for segment in urlparse(href).path.split("/") if segment
+                    for segment in urlparse(href).path.split("/")
+                    if segment
                 ]
 
                 moduleTitle = (
@@ -167,6 +308,9 @@ def parseModules(pwnTree:dict[str,dict]):
                     if path_segments
                     else href
                 )
+
+                if debug:
+                    print(f"[parseModules] Fallback module title: {moduleTitle!r}")
 
                 print("Do manual entry of this href if you want to.")
                 print("-------------------------------------------------------")
@@ -176,35 +320,94 @@ def parseModules(pwnTree:dict[str,dict]):
                 "contents": {}
             }
 
-            end()
+            if debug:
+                print(f"[parseModules] Added module: {moduleTitle!r}")
+                print(f"[parseModules] Module URL: {href}")
+                print(
+                    f"[parseModules] Modules currently stored for "
+                    f"{key!r}: {len(value['modules'])}"
+                )
 
-            return pwnTree
+    return pwnTree
+
+def parseContents(pwnTree: dict[str, dict], debug: bool):
+    for dojoName, dojoData in pwnTree.items():
+
+        if debug:
+            print(f"Processing Dojo: {dojoName}")
+
+        for moduleName, moduleData in dojoData["modules"].items():
+
+            moduleHref = moduleData["href"]
+
+            if debug:
+                print(f"  Processing module: {moduleName}")
+                print(f"  Module URL: {moduleHref}")
+
+            driver.get(moduleHref)
+
+            # Parse the contents of this module here.
+
+    return pwnTree
 
 
+def master(createJson: bool = True, checkInTerminal: bool = True, debug: bool = True):
+    if debug:
+        print("[master] Starting scraping process...")
+        print(f"[master] Debug enabled: {debug}")
+        print(f"[master] Terminal output enabled: {checkInTerminal}")
+        print(f"[master] JSON output enabled: {createJson}")
+        print("=======================================================")
 
-def master(createJson: bool = True, checkInTerminal: bool = True):
-    start("https://pwn.college/dojos")
-    pwnTree = searchDojos()
+    start("https://pwn.college/dojos", debug)
+
+    pwnTree = searchDojos(debug)
 
     if checkInTerminal:
+        if debug:
+            print("[master] Printing the extracted Dojo entries...")
+
         for key, value in pwnTree.items():
             print(f"{key}: {value}")
+
         print("------------------------------------------------------")
 
-    pwnTree = parseModules(pwnTree)
+    if debug:
+        print("[master] Passing Dojo data to parseModules()...")
+
+    pwnTree = parseModules(pwnTree, debug)
 
     if checkInTerminal:
+        if debug:
+            print("[master] Printing the resulting pwnTree...")
+
         pprint(pwnTree)
         print("------------------------------------------------------")
 
+    if debug:
+        print("[master] Passing Module data to parseContents()...")
+
+    pwnTree = parseModules(pwnTree, debug)
+
     if createJson:
+        if debug:
+            print("[master] Saving pwnTree to 'Check/pwnTree.json'...")
+
         with open("Check/pwnTree.json", "w", encoding="utf-8") as file:
             json.dump(pwnTree, file, indent=4, ensure_ascii=False)
 
+        if debug:
+            print("[master] JSON file saved successfully.")
+
+    if debug:
+        print("[master] Waiting for 2 seconds before closing...")
+
     time.sleep(2)
-    end()
+    end(debug)
+
+    if debug:
+        print("[master] Scraping process finished.")
+        print("=======================================================")
 
 
-
-
-master(createJson=True, checkInTerminal=True)
+master(createJson=True, checkInTerminal=True, debug=True)
