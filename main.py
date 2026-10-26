@@ -201,6 +201,7 @@ def parseModules(pwnTree: dict[str, dict], debug: bool):
         print(f"[parseModules] Total Dojos to process: {len(pwnTree)}")
 
     for dojo_index, (key, value) in enumerate(pwnTree.items(), start=1):
+        module_counter = 1
 
         if debug:
             print(
@@ -317,10 +318,12 @@ def parseModules(pwnTree: dict[str, dict], debug: bool):
                 print("-------------------------------------------------------")
 
             value["modules"][moduleTitle] = {
-                "moduleIndex": f"{value['dojoIndex']}.{len(value['modules']) + 1}",
+                "moduleIndex": f"{value['dojoIndex']}.{module_counter}",
                 "href": href,
                 "contents": {}
             }
+
+            module_counter+=1
 
             if debug:
                 print(f"[parseModules] Added module: {moduleTitle!r}")
