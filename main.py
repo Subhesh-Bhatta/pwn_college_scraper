@@ -356,54 +356,64 @@ def parseContents(pwnTree: dict[str, dict], debug: bool):
     return pwnTree
 
 
-def master(createJson: bool = True, checkInTerminal: bool = True, debug: bool = True):
-    if debug:
-        print("[master] Starting scraping process...")
-        print(f"[master] Debug enabled: {debug}")
-        print(f"[master] Terminal output enabled: {checkInTerminal}")
-        print(f"[master] JSON output enabled: {createJson}")
-        print("=======================================================")
+def master(createJson: bool = True, checkInTerminal: bool = True, debug: bool = True, parseHrefsAgain: bool = True):
+   
+    if parseHrefsAgain:
 
-    start("https://pwn.college/dojos", debug)
-
-    pwnTree = searchDojos(debug)
-
-    if checkInTerminal:
         if debug:
-            print("[master] Printing the extracted Dojo entries...")
+            print("[master] Starting scraping process...")
+            print(f"[master] Debug enabled: {debug}")
+            print(f"[master] Terminal output enabled: {checkInTerminal}")
+            print(f"[master] JSON output enabled: {createJson}")
+            print("=======================================================")
 
-        for key, value in pwnTree.items():
-            print(f"{key}: {value}")
+        start("https://pwn.college/dojos", debug)
 
-        print("------------------------------------------------------")
+        pwnTree = searchDojos(debug)
 
-    if debug:
-        print("[master] Passing Dojo data to parseModules()...")
+        if checkInTerminal:
+            if debug:
+                print("[master] Printing the extracted Dojo entries...")
 
-    pwnTree = parseModules(pwnTree, debug)
+            for key, value in pwnTree.items():
+                print(f"{key}: {value}")
 
-    if checkInTerminal:
+            print("------------------------------------------------------")
+
         if debug:
-            print("[master] Printing the resulting pwnTree...")
+            print("[master] Passing Dojo data to parseModules()...")
 
-        pprint(pwnTree)
-        print("------------------------------------------------------")
+        pwnTree = parseModules(pwnTree, debug)
+
+        if checkInTerminal:
+            if debug:
+                print("[master] Printing the resulting pwnTree...")
+
+            pprint(pwnTree)
+            print("------------------------------------------------------")
+
+
+        if createJson:
+            if debug:
+                print("[master] Saving pwnTree to 'Check/pwnTree.json'...")
+
+            with open("Check/pwnTree.json", "w", encoding="utf-8") as file:
+                json.dump(pwnTree, file, indent=4, ensure_ascii=False)
+
+            if debug:
+                print("[master] JSON file saved successfully.")
+
+    if not parseHrefsAgain:
+        with open('Check/pwnTree.json', 'r', encoding='utf-8') as file:
+            pwnTree = json.load(file)
+
 
     if debug:
         print("[master] Passing Module data to parseContents()...")
 
-    pwnTree = parseModules(pwnTree, debug)
-
-    if createJson:
-        if debug:
-            print("[master] Saving pwnTree to 'Check/pwnTree.json'...")
-
-        with open("Check/pwnTree.json", "w", encoding="utf-8") as file:
-            json.dump(pwnTree, file, indent=4, ensure_ascii=False)
-
-        if debug:
-            print("[master] JSON file saved successfully.")
-
+    pwnTree = parseContents(pwnTree, debug)
+    
+    
     if debug:
         print("[master] Waiting for 2 seconds before closing...")
 
@@ -415,4 +425,4 @@ def master(createJson: bool = True, checkInTerminal: bool = True, debug: bool = 
         print("=======================================================")
 
 
-master(createJson=True, checkInTerminal=True, debug=True)
+master(createJson=True, checkInTerminal=True, debug=True, parseHrefsAgain=False)
