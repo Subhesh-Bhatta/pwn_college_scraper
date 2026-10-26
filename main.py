@@ -9,6 +9,7 @@ from pprint import pprint
 import json
 import os
 
+
 def start(url, debug: bool = False):
     global driver
 
