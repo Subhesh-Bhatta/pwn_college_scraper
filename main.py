@@ -5,6 +5,8 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementNotInteractableException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from pprint import pprint
 import json
 import os
@@ -467,6 +469,82 @@ def buildHrefLookup(pwnTree: dict[str, dict], debug: bool = True, checkInTermina
     return moduleLookup
 
 
+def parseContent(href: str, debug: bool = True):
+    if debug:
+        print("[parseContent] Navigating to module page...")
+        print(f"[parseContent] URL: {href}")
+
+    driver.get(href)
+
+    if debug:
+        print(f"[parseContent] Page loaded: {driver.current_url}")
+        print("[parseContent] Searching for the accordion container...")
+
+    try:
+        challenge_div = find_required_element_helper(
+            driver,
+            By.CLASS_NAME,
+            "accordion",
+            """The class name accordion doesn't exist.
+            Check the page and see if all challenges are contained
+            inside an element with the class name accordion.
+            ----------------------------------------------------"""
+        )
+    except NoSuchElementException:
+        if debug:
+            print("[parseContent] No accordion found. This page has no challenges.")
+            print("[parseContent] Skipping this page.")
+        return
+    
+
+    if debug:
+        print("[parseContent] Accordion container found.")
+        print("[parseContent] Searching for challenge buttons...")
+
+    buttons_which_opens_challenge = find_required_elements_helper(
+        challenge_div,
+        By.CSS_SELECTOR,
+        'button[class*="challenge-button-"]',
+        """The challenge buttons don't exist.
+        Check whether their class names contain the expected
+        challenge-button- pattern.
+        ----------------------------------------------------"""
+    )
+
+    if debug:
+        print(
+            f"[parseContent] Found "
+            f"{len(buttons_which_opens_challenge)} challenge buttons."
+        )
+
+    wait = WebDriverWait(driver, 1)
+    for i, button in enumerate(buttons_which_opens_challenge, start=1):
+
+        if debug:
+            print(f"[parseContent] Scrolling challenge button {i} into view...")
+        
+        driver.execute_script(
+            "arguments[0].scrollIntoView({block: 'center'});",
+            button
+        )
+
+        if debug:
+            print(f"[parseContent] Waiting for challenge button {i}...")
+
+        wait.until(EC.element_to_be_clickable(button)).click()
+
+        if debug:
+            print(f"[parseContent] Challenge button {i} clicked.")
+            print(f"[parseContent] Challenge button {i} dropdown opened.")
+
+    if debug:
+        print("[parseContent] Finished opening challenge dropdowns.")
+        print("-" * 55)
+
+
+
+
+
 def master(
     createJson: bool = True,
     checkInTerminal: bool = True,
@@ -477,6 +555,9 @@ def master(
     pwnTree = {}
     driverStarted = False
 
+    start("https://pwn.college/dojos", debug)
+    driverStarted = True
+    
     if debug:
         print("=" * 60)
         print("[master] Starting scraper workflow.")
@@ -502,10 +583,8 @@ def master(
 
     if parseHrefsAgain:
         if debug:
-            print("[master] Starting browser and scraping Dojos...")
+            print("[master] Scraping Dojos...")
 
-        start("https://pwn.college/dojos", debug)
-        driverStarted = True
 
         pwnTree = searchDojos(debug)
 
@@ -562,16 +641,17 @@ def master(
         pprint(selectedHrefs)
         print("-" * 55)
 
-    # Call your content-parsing function here when ready.
-    # For example:
-    # for index, href in selectedHrefs.items():
-    #     parseContent(href, debug)
+
+    for index, href in selectedHrefs.items():
+        parseContent(href, debug)
 
     if driverStarted:
         if debug:
             print("[master] Waiting 2 seconds before closing browser...")
 
         time.sleep(2)
+        # uncomment the input() if you want to keep the browser window open
+        input()
         end(debug)
 
     if debug:
@@ -584,5 +664,5 @@ master(
     checkInTerminal=True,
     debug=True,
     parseHrefsAgain=False,
-    indicesToParse={"1", "2.3"}
+    indicesToParse={"1", "2", "3.3"}
 )
