@@ -6,6 +6,8 @@ The scraper builds a structured representation of the dojo and module hierarchy,
 
 This project is intended for personal educational use and research. It is unofficial and is not affiliated with or endorsed by pwn.college.
 
+This was designed for the purpose of offline/local storage, and easier copy pasting (viewing) of the challenges.
+
 **Last verified working:** October 27, 2026
 
 ## Features
