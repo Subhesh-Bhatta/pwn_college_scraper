@@ -3,3 +3,7 @@
 venv/
 .venv/
 env/
+
+#Output folder
+
+pwm_scraped_output
