@@ -613,7 +613,8 @@ def master(
     debug: bool = True,
     parseHrefsAgain: bool = True,
     parseContentAgain: bool = True,
-    indicesToParse: set[str] | None = None
+    indicesToParse: set[str] | None = None,
+    previewContentLength: int | None = None
 ):
     pwnTree = {}
     driverStarted = False
@@ -701,6 +702,9 @@ def master(
         contents = moduleData.get("contents", {})
         contentExists = bool(contents.get("content"))
 
+        # this always executes for parseContentAgain = True, so every module that we selected gets parsed again,
+        # however, if we aren't parsing again, it is only true for modules where content don't exist, which we store in modulesToParse
+        # and parse again
         if parseContentAgain or not contentExists:
             modulesToParse[index] = moduleData
 
@@ -712,8 +716,6 @@ def master(
             f"[master] Modules requiring content scraping: {len(modulesToParse)}"
         )
 
-    # Start the browser only if it has not already been started and
-    # hrefs needed rebuilding. parseContent currently uses requests.
     for index, moduleData in modulesToParse.items():
         if debug:
             print(f"[master] Parsing content for module {index}...")
@@ -726,6 +728,13 @@ def master(
 
         if debug:
             print(f"[master] Content stored for module {index}.")
+
+    if previewContentLength is not None:
+        for index, moduleData in selectedModules.items():
+            content = moduleData.get("contents", {}).get("content", "")
+
+            print(f"\n[{index}] {len(content)} characters total:")
+            print(content[:previewContentLength])
 
     if createJson:
         os.makedirs("Check", exist_ok=True)
@@ -763,5 +772,6 @@ pwnTree = master(
     debug=True,
     parseHrefsAgain=False,
     parseContentAgain=True,
-    indicesToParse={"3.3"}
+    indicesToParse={"3.3"},
+    previewContentLength=500
 )
