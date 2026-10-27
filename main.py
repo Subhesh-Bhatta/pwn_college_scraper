@@ -468,69 +468,111 @@ def buildHrefLookup(pwnTree: dict[str, dict], debug: bool = True, checkInTermina
 
 
 def parseContent(href: str, debug: bool = True):
+    content = ""
     if debug:
-        print("[parseContent] Navigating to module page...")
+        print("[parseContent] Fetching module page...")
         print(f"[parseContent] URL: {href}")
 
-    driver.get(href)
+    response = requests.get(href)
+    response.raise_for_status()
 
     if debug:
-        print(f"[parseContent] Page loaded: {driver.current_url}")
+        print(f"[parseContent] Page fetched: {response.url}")
+        print("[parseContent] Parsing page HTML...")
+
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    if debug:
         print("[parseContent] Searching for the accordion container...")
 
-    try:
-        challenge_div = find_required_element_helper(
-            driver,
-            By.CLASS_NAME,
-            "accordion",
-            """The class name accordion doesn't exist.
-            Check the page and see if all challenges are contained
-            inside an element with the class name accordion.
-            ----------------------------------------------------"""
-        )
-    except NoSuchElementException:
+    challenge_div = soup.find("div", class_="accordion")
+
+    if challenge_div is None:
         if debug:
             print("[parseContent] No accordion found. This page has no challenges.")
             print("[parseContent] Skipping this page.")
         return
-    
 
     if debug:
         print("[parseContent] Accordion container found.")
-        print("[parseContent] Searching for accordion-header for titles...")
+        print("[parseContent] Searching for accordion items...")
 
-    challenge_elements = find_required_elements_helper(
-        challenge_div,
-        By.CLASS_NAME,
-        'accordion-item',
-        """
-        ----------------------------------------------------"""
+    challenge_elements = challenge_div.find_all(
+        "div",
+        class_="accordion-item"
     )
 
-    for challenges in challenge_elements:
-        challenge_header_element = find_required_element_helper(
-            challenge_elements,
-            By.CLASS_NAME,
-            "accordion-item-header",
-            """
-            """
-        )
-        title_span_element = find_required_element_helper(
-            challenge_header_element,
-            By.TAG_NAME,
-            "span",
-            """
-            """
-        )
-        challenge_body_element = find_required_element_helper(
-            challenge_elements,
-            By.CLASS_NAME,
-            "accordion-item-body",
-            """
-            """
+    if debug:
+        print(f"[parseContent] Found {len(challenge_elements)} challenge elements.")
+
+    for i, challenge in enumerate(challenge_elements, start=1):
+        if debug:
+            print(f"[parseContent] Processing challenge {i}...")
+
+        challenge_header_element = challenge.find(
+            "div",
+            class_="accordion-item-header"
         )
 
+        if challenge_header_element is None:
+            if debug:
+                print(f"[parseContent] Challenge {i} has no header. Skipping.")
+            continue
 
+        title_span_element = challenge_header_element.find("span")
+
+        if title_span_element is None:
+            if debug:
+                print(f"[parseContent] Challenge {i} has no title span. Skipping.")
+            continue
+
+        challenge_title = title_span_element.get_text(strip=True)
+
+        challenge_body_element = challenge.find(
+            "div",
+            class_="accordion-item-body"
+        )
+
+        if debug:
+            print(f"[parseContent] Challenge title: {challenge_title}")
+
+        if challenge_body_element is None:
+            if debug:
+                print(f"[parseContent] Challenge {i} has no body. Skipping.")
+            continue
+
+        if debug:
+            print(f"[parseContent] Extracting content from challenge {i}...")
+
+        content_parts = []
+
+        for element in challenge_body_element.find_all(
+            ["p", "pre", "h1", "h2", "h3", "h4", "h5", "h6", "li"]
+        ):
+            if element.name == "pre":
+                text = element.get_text()
+            else:
+                text = element.get_text(strip=True)
+
+            if text.strip():
+                content_parts.append(text)
+
+        content = "\n\n".join(content_parts)
+
+        print(f"\n{challenge_title}")
+        print("-" * len(challenge_title))
+        print("\n\n\n")
+        print(content)
+        
+
+        if debug:
+            print(f"[parseContent] Finished processing challenge {i}.")
+
+    if debug:
+        print("[parseContent] Finished processing all challenges.")
+        print("-" * 55)
+
+    return content
     
 
 
