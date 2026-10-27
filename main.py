@@ -6,6 +6,8 @@ from selenium.common.exceptions import NoSuchElementException
 from pprint import pprint
 import json
 import os
+from bs4 import BeautifulSoup
+import requests
 
 
 def start(url, debug: bool = False):
@@ -504,6 +506,30 @@ def parseContent(href: str, debug: bool = True):
         """
         ----------------------------------------------------"""
     )
+
+    for challenges in challenge_elements:
+        challenge_header_element = find_required_element_helper(
+            challenge_elements,
+            By.CLASS_NAME,
+            "accordion-item-header",
+            """
+            """
+        )
+        title_span_element = find_required_element_helper(
+            challenge_header_element,
+            By.TAG_NAME,
+            "span",
+            """
+            """
+        )
+        challenge_body_element = find_required_element_helper(
+            challenge_elements,
+            By.CLASS_NAME,
+            "accordion-item-body",
+            """
+            """
+        )
+
 
     
 

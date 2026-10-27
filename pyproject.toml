@@ -6,5 +6,6 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "bs4>=0.0.2",
+    "requests>=2.34.2",
     "selenium>=4.51.0",
 ]
