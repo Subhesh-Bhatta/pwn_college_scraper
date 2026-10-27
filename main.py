@@ -12,7 +12,23 @@ from pathlib import Path
 import re
 
 
-def start(url, debug: bool = False):
+_lastRequestTime = 0.0
+
+
+def waitForRateLimit(rateLimit: float = 1.0):
+    global _lastRequestTime
+
+    currentTime = time.monotonic()
+    elapsedTime = currentTime - _lastRequestTime
+    remainingTime = rateLimit - elapsedTime
+
+    if remainingTime > 0:
+        time.sleep(remainingTime)
+
+    _lastRequestTime = time.monotonic()
+
+
+def start(url, debug: bool = False, rateLimit: float = 1.0):
     global driver
 
     if debug:
@@ -23,6 +39,7 @@ def start(url, debug: bool = False):
     if debug:
         print(f"[START] Navigating to: {url}")
 
+    waitForRateLimit(rateLimit)
     driver.get(url)
 
     if debug:
@@ -65,7 +82,6 @@ def find_required_elements_helper(parent, by, selector, error_message):
         return parent.find_elements(by, selector)
     except NoSuchElementException:
         raise NoSuchElementException(error_message) from None
-
 
 
 def searchDojos(debug: bool):
@@ -212,9 +228,11 @@ def searchDojos(debug: bool):
     return pwnTree
 
 
-
-
-def parseModules(pwnTree: dict[str, dict], debug: bool):
+def parseModules(
+    pwnTree: dict[str, dict],
+    debug: bool,
+    rateLimit: float = 1.0
+):
     if debug:
         print("[parseModules] Starting module extraction...")
         print(f"[parseModules] Total Dojos to process: {len(pwnTree)}")
@@ -232,6 +250,7 @@ def parseModules(pwnTree: dict[str, dict], debug: bool):
         if debug:
             print("[parseModules] Navigating to the Dojo webpage...")
 
+        waitForRateLimit(rateLimit)
         driver.get(value["href"])
 
         if debug:
@@ -371,10 +390,13 @@ def parseModules(pwnTree: dict[str, dict], debug: bool):
 
 
 # the | None = None basically says its either a set or None
-# we can also use indicesToParse = None directly, but we'd lost the type hint that its a set
-# also can't do indicesToParse: set[str] = None since, None is not a set
+# we can also use indicesToParse = None directly, but we'd lose the type hint that it's a set
+# also can't do indicesToParse: set[str] = None since None is not a set
 
-def validParsingIndices(pwnTree: dict[str, dict], debug: bool = True, indicesToParse: set[str] | None = None
+def validParsingIndices(
+    pwnTree: dict[str, dict],
+    debug: bool = True,
+    indicesToParse: set[str] | None = None
 ) -> list[str]:
 
     if debug:
@@ -392,8 +414,6 @@ def validParsingIndices(pwnTree: dict[str, dict], debug: bool = True, indicesToP
         print(f"[validParsingIndices] Found {len(validIndices)} valid indices.")
 
     validParsingIndices = []
-
-
 
     if indicesToParse is not None:
         if debug:
@@ -448,7 +468,6 @@ def validParsingIndices(pwnTree: dict[str, dict], debug: bool = True, indicesToP
     return validParsingIndices
 
 
-
 def buildModuleLookup(
     pwnTree: dict[str, dict],
     debug: bool = True,
@@ -475,13 +494,19 @@ def buildModuleLookup(
     return moduleLookup
 
 
-def parseContent(href: str, moduleData: dict, debug: bool = True):
+def parseContent(
+    href: str,
+    moduleData: dict,
+    debug: bool = True,
+    rateLimit: float = 1.0
+):
     all_content = []
 
     if debug:
         print("[parseContent] Fetching module page...")
         print(f"[parseContent] URL: {href}")
 
+    waitForRateLimit(rateLimit)
     response = requests.get(href)
     response.raise_for_status()
 
@@ -613,7 +638,6 @@ def parseContent(href: str, moduleData: dict, debug: bool = True):
     if debug:
         print("[parseContent] Finished processing all challenges.")
         print("-" * 55)
-    
 
 
 def createOutputFileStructure(
@@ -679,7 +703,6 @@ def createOutputFileStructure(
         print(f"[createOutputFileStructure] Files unchanged: {filesUnchanged}")
 
 
-
 def master(
     createJson: bool = True,
     checkInTerminal: bool = True,
@@ -687,7 +710,8 @@ def master(
     parseHrefsAgain: bool = True,
     parseContentAgain: bool = True,
     indicesToParse: set[str] | None = None,
-    previewContentLength: int | None = None
+    previewContentLength: int | None = None,
+    rateLimit: float = 1.0
 ):
     pwnTree = {}
     driverStarted = False
@@ -700,7 +724,11 @@ def master(
         print(f"[master] JSON output enabled: {createJson}")
         print(f"[master] Re-scrape hrefs: {parseHrefsAgain}")
         print(f"[master] Re-scrape content: {parseContentAgain}")
+        print(f"[master] Rate limit: {rateLimit} seconds")
         print("=" * 60)
+
+    if rateLimit < 0:
+        raise ValueError("rateLimit must be greater than or equal to 0.")
 
     if not parseHrefsAgain:
         try:
@@ -720,7 +748,7 @@ def master(
         if debug:
             print("[master] Starting browser and scraping Dojos...")
 
-        start("https://pwn.college/dojos", debug)
+        start("https://pwn.college/dojos", debug, rateLimit)
         driverStarted = True
 
         pwnTree = searchDojos(debug)
@@ -733,7 +761,7 @@ def master(
         if debug:
             print("[master] Parsing modules...")
 
-        pwnTree = parseModules(pwnTree, debug)
+        pwnTree = parseModules(pwnTree, debug, rateLimit)
 
         if checkInTerminal:
             print("[master] Resulting pwnTree:")
@@ -782,9 +810,7 @@ def master(
             modulesToParse[index] = moduleData
 
     if debug:
-        print(
-            f"[master] Modules selected: {len(selectedModules)}"
-        )
+        print(f"[master] Modules selected: {len(selectedModules)}")
         print(
             f"[master] Modules requiring content scraping: {len(modulesToParse)}"
         )
@@ -796,7 +822,8 @@ def master(
         parseContent(
             moduleData["href"],
             moduleData,
-            debug=debug
+            debug=debug,
+            rateLimit=rateLimit
         )
 
         if debug:
@@ -808,7 +835,6 @@ def master(
             print(f"\n[{index}] {len(content)} characters total:")
             print(content[:previewContentLength])
             print("\n")
-
 
     if createJson:
         os.makedirs("Check", exist_ok=True)
@@ -844,13 +870,15 @@ pwnTree = master(
     createJson=True,
     checkInTerminal=True,
     debug=True,
-    parseHrefsAgain=False,
-    parseContentAgain=False,
-    # indicesToParse,
-    previewContentLength=500
+    parseHrefsAgain=True,
+    parseContentAgain=True,
+    # indicesToParse={"3.3"},
+    previewContentLength=500,
+    rateLimit=1.0
 )
 
 createOutputFileStructure(pwnTree, debug=True, loadJson=True)
 
-#took 5 mins to store all the contents in json (href parsing not included)
-#less than 1 min to conver the json to files
+# took 10 mins to store all parse hrefs, parse content and convert json to files (with rate limiting of 1) -> Date: 2026-10-27
+# took 5 mins to store all the contents in json (href parsing not included) without rate limiting -> Date: 2026-10-27
+# less than 1 min to convert the json to files -> Date: 2026-10-27
