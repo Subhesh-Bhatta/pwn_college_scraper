@@ -558,6 +558,41 @@ def parseContent(href: str, moduleData: dict, debug: bool = True):
             if text.strip():
                 content_parts.append(text)
 
+                if debug:
+                    print(
+                        f"[parseContent] Extracted <{element.name}> "
+                        f"({len(text)} characters)."
+                    )
+
+        if debug:
+            print(
+                f"[parseContent] Searching for iframes in challenge {i}..."
+            )
+
+        for iframe in challenge_body_element.find_all("iframe"):
+            iframe_src = iframe.get("data-src")
+
+            if iframe_src:
+                parsed_url = urlparse(str(iframe_src))
+
+                if parsed_url.hostname in {"www.youtube.com", "youtube.com"}:
+                    if parsed_url.path.startswith("/embed/"):
+                        video_id = parsed_url.path.split("/")[-1]
+                        iframe_src = (
+                            f"https://www.youtube.com/watch?v={video_id}"
+                        )
+
+                content_parts.append(iframe_src)
+
+                if debug:
+                    print(
+                        f"[parseContent] Extracted iframe URL: {iframe_src}"
+                    )
+            elif debug:
+                print(
+                    "[parseContent] Skipping iframe without a data-src attribute."
+                )
+
         content = "\n\n".join(content_parts)
 
         all_content.append(
@@ -567,7 +602,10 @@ def parseContent(href: str, moduleData: dict, debug: bool = True):
         )
 
         if debug:
-            print(f"[parseContent] Finished processing challenge {i}.")
+            print(
+                f"[parseContent] Finished processing challenge {i} "
+                f"({len(content)} characters extracted)."
+            )
 
     # Storing the combined content directly in pwnTree.
     moduleData["contents"]["content"] = "\n\n\n".join(all_content)
@@ -729,12 +767,13 @@ def master(
         if debug:
             print(f"[master] Content stored for module {index}.")
 
-    if previewContentLength is not None:
-        for index, moduleData in selectedModules.items():
+        if previewContentLength is not None:
             content = moduleData.get("contents", {}).get("content", "")
 
             print(f"\n[{index}] {len(content)} characters total:")
             print(content[:previewContentLength])
+            print("\n")
+
 
     if createJson:
         os.makedirs("Check", exist_ok=True)
@@ -772,6 +811,6 @@ pwnTree = master(
     debug=True,
     parseHrefsAgain=False,
     parseContentAgain=True,
-    indicesToParse={"3.3"},
+    indicesToParse={"3"},
     previewContentLength=500
 )
