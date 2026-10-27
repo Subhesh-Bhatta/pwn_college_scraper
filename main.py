@@ -612,13 +612,11 @@ def master(
     checkInTerminal: bool = True,
     debug: bool = True,
     parseHrefsAgain: bool = True,
+    parseContentAgain: bool = True,
     indicesToParse: set[str] | None = None
 ):
     pwnTree = {}
     driverStarted = False
-
-    start("https://pwn.college/dojos", debug)
-    driverStarted = True
 
     if debug:
         print("=" * 60)
@@ -627,6 +625,7 @@ def master(
         print(f"[master] Terminal output enabled: {checkInTerminal}")
         print(f"[master] JSON output enabled: {createJson}")
         print(f"[master] Re-scrape hrefs: {parseHrefsAgain}")
+        print(f"[master] Re-scrape content: {parseContentAgain}")
         print("=" * 60)
 
     if not parseHrefsAgain:
@@ -645,7 +644,10 @@ def master(
 
     if parseHrefsAgain:
         if debug:
-            print("[master] Scraping Dojos...")
+            print("[master] Starting browser and scraping Dojos...")
+
+        start("https://pwn.college/dojos", debug)
+        driverStarted = True
 
         pwnTree = searchDojos(debug)
 
@@ -687,11 +689,32 @@ def master(
 
     if checkInTerminal:
         print("[master] Selected modules:")
-        pprint(selectedModules)
+        pprint({
+            index: moduleData["href"]
+            for index, moduleData in selectedModules.items()
+        })
         print("-" * 55)
 
-    # Scrape selected modules and store their content inside pwnTree.
+    modulesToParse = {}
+
     for index, moduleData in selectedModules.items():
+        contents = moduleData.get("contents", {})
+        contentExists = bool(contents.get("content"))
+
+        if parseContentAgain or not contentExists:
+            modulesToParse[index] = moduleData
+
+    if debug:
+        print(
+            f"[master] Modules selected: {len(selectedModules)}"
+        )
+        print(
+            f"[master] Modules requiring content scraping: {len(modulesToParse)}"
+        )
+
+    # Start the browser only if it has not already been started and
+    # hrefs needed rebuilding. parseContent currently uses requests.
+    for index, moduleData in modulesToParse.items():
         if debug:
             print(f"[master] Parsing content for module {index}...")
 
@@ -704,7 +727,6 @@ def master(
         if debug:
             print(f"[master] Content stored for module {index}.")
 
-    # Save pwnTree after scraping so the JSON includes the new contents.
     if createJson:
         os.makedirs("Check", exist_ok=True)
 
@@ -734,10 +756,12 @@ def master(
 
     return pwnTree
 
-master(
+
+pwnTree = master(
     createJson=True,
     checkInTerminal=True,
     debug=True,
     parseHrefsAgain=False,
+    parseContentAgain=True,
     indicesToParse={"3.3"}
 )
