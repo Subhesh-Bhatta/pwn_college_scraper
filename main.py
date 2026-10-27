@@ -449,22 +449,28 @@ def validParsingIndices(pwnTree: dict[str, dict], debug: bool = True, indicesToP
 
 
 
-def buildHrefLookup(pwnTree: dict[str, dict], debug: bool = True, checkInTerminal: bool = False) -> dict[str, str]:
+def buildModuleLookup(
+    pwnTree: dict[str, dict],
+    debug: bool = True,
+    checkInTerminal: bool = False
+) -> dict[str, dict]:
 
     if debug:
-        print("[buildHrefLookup] Building module index-to-href lookup...")
+        print("[buildModuleLookup] Building module index-to-module lookup...")
 
     moduleLookup = {}
 
     for dojoData in pwnTree.values():
         for moduleData in dojoData["modules"].values():
             moduleIndex = str(moduleData["moduleIndex"])
-            href = moduleData["href"]
 
-            moduleLookup[moduleIndex] = href
+            moduleLookup[moduleIndex] = moduleData
 
     if debug:
-        print(f"[buildHrefLookup] Lookup contains {len(moduleLookup)} modules.")
+        print(f"[buildModuleLookup] Lookup contains {len(moduleLookup)} modules.")
+
+    if checkInTerminal:
+        pprint(moduleLookup)
 
     return moduleLookup
 
@@ -613,7 +619,7 @@ def master(
 
     start("https://pwn.college/dojos", debug)
     driverStarted = True
-    
+
     if debug:
         print("=" * 60)
         print("[master] Starting scraper workflow.")
@@ -641,7 +647,6 @@ def master(
         if debug:
             print("[master] Scraping Dojos...")
 
-
         pwnTree = searchDojos(debug)
 
         if checkInTerminal:
@@ -658,18 +663,6 @@ def master(
             print("[master] Resulting pwnTree:")
             pprint(pwnTree)
             print("-" * 55)
-
-        if createJson:
-            os.makedirs("Check", exist_ok=True)
-
-            if debug:
-                print("[master] Saving pwnTree.json...")
-
-            with open("Check/pwnTree.json", "w", encoding="utf-8") as file:
-                json.dump(pwnTree, file, indent=4, ensure_ascii=False)
-
-            if debug:
-                print("[master] JSON saved successfully.")
 
     if debug:
         print("[master] Validating requested module indices...")
@@ -697,23 +690,65 @@ def master(
         pprint(selectedHrefs)
         print("-" * 55)
 
-
+    # Scrape selected modules and store their content inside pwnTree.
     for index, href in selectedHrefs.items():
-        content = parseContent(href, debug)
+        if debug:
+            print(f"[master] Parsing content for module {index}...")
+
+        moduleData = None
+
+        for dojoData in pwnTree.values():
+            for moduleDataCandidate in dojoData["modules"].values():
+                if moduleDataCandidate["moduleIndex"] == index:
+                    moduleData = moduleDataCandidate
+                    break
+
+            if moduleData is not None:
+                break
+
+        if moduleData is None:
+            if debug:
+                print(f"[master] Could not find module data for index {index}. Skipping.")
+            continue
+
+        parseContent(
+            href,
+            moduleData,
+            debug=debug
+        )
+
+        if debug:
+            print(f"[master] Content stored for module {index}.")
+
+    # Save pwnTree after scraping so the JSON includes the new contents.
+    if createJson:
+        os.makedirs("Check", exist_ok=True)
+
+        if debug:
+            print("[master] Saving pwnTree.json...")
+
+        with open("Check/pwnTree.json", "w", encoding="utf-8") as file:
+            json.dump(pwnTree, file, indent=4, ensure_ascii=False)
+
+        if debug:
+            print("[master] JSON saved successfully.")
 
     if driverStarted:
         if debug:
             print("[master] Waiting 2 seconds before closing browser...")
 
         time.sleep(2)
-        # uncomment the input() if you want to keep the browser window open
-        input()
+
+        # Uncomment input() if you want to keep the browser window open.
+        # input()
+
         end(debug)
 
     if debug:
         print("[master] Workflow finished.")
         print("=" * 60)
 
+    return pwnTree
 
 master(
     createJson=True,
