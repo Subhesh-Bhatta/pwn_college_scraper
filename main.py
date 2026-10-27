@@ -673,46 +673,30 @@ def master(
         indicesToParse=indicesToParse
     )
 
-    moduleLookup = buildHrefLookup(
+    moduleLookup = buildModuleLookup(
         pwnTree,
         debug=debug,
         checkInTerminal=checkInTerminal
     )
 
-    selectedHrefs = {
+    selectedModules = {
         index: moduleLookup[index]
         for index in selectedIndices
         if index in moduleLookup
     }
 
     if checkInTerminal:
-        print("[master] Selected modules and their hrefs:")
-        pprint(selectedHrefs)
+        print("[master] Selected modules:")
+        pprint(selectedModules)
         print("-" * 55)
 
     # Scrape selected modules and store their content inside pwnTree.
-    for index, href in selectedHrefs.items():
+    for index, moduleData in selectedModules.items():
         if debug:
             print(f"[master] Parsing content for module {index}...")
 
-        moduleData = None
-
-        for dojoData in pwnTree.values():
-            for moduleDataCandidate in dojoData["modules"].values():
-                if moduleDataCandidate["moduleIndex"] == index:
-                    moduleData = moduleDataCandidate
-                    break
-
-            if moduleData is not None:
-                break
-
-        if moduleData is None:
-            if debug:
-                print(f"[master] Could not find module data for index {index}. Skipping.")
-            continue
-
         parseContent(
-            href,
+            moduleData["href"],
             moduleData,
             debug=debug
         )
