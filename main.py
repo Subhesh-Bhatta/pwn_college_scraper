@@ -3,9 +3,6 @@ from selenium import webdriver
 from urllib.parse import urlparse, unquote
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import ElementNotInteractableException
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from pprint import pprint
 import json
 import os
@@ -498,100 +495,17 @@ def parseContent(href: str, debug: bool = True):
 
     if debug:
         print("[parseContent] Accordion container found.")
-        print("[parseContent] Searching for challenge buttons...")
+        print("[parseContent] Searching for accordion-header for titles...")
 
-    buttons_which_opens_challenge = find_required_elements_helper(
+    challenge_elements = find_required_elements_helper(
         challenge_div,
-        By.CSS_SELECTOR,
-        'button[class*="challenge-button-"]',
-        """The challenge buttons don't exist.
-        Check whether their class names contain the expected
-        challenge-button- pattern.
+        By.CLASS_NAME,
+        'accordion-item',
+        """
         ----------------------------------------------------"""
     )
 
-    if debug:
-        print(
-            f"[parseContent] Found "
-            f"{len(buttons_which_opens_challenge)} challenge buttons."
-        )
-
-        buttons_which_opens_challenge = find_required_elements_helper(
-    challenge_div,
-    By.CSS_SELECTOR,
-    'button[class*="challenge-button-"]',
-    """The challenge buttons don't exist.
-    Check whether their class names contain the expected pattern.
-    ----------------------------------------------------------"""
-)
-
-    challenge_bodies = find_required_elements_helper(
-        challenge_div,
-        By.CLASS_NAME,
-        "accordion-item-body",
-        """The challenge body elements don't exist.
-        Check whether their class names follow the expected format.
-        ----------------------------------------------------------"""
-    )
-    count = 0
-
-    if len(buttons_which_opens_challenge) != len(challenge_bodies):
-        count+=1
-        if debug:
-            print(
-                "[parseContent] Warning: The number of challenge buttons "
-                f"({len(buttons_which_opens_challenge)}) does not match "
-                f"the number of challenge bodies ({len(challenge_bodies)})."
-            )
-        return count
-    else:
-        print("\n Matching \n")
-
-
-    # wait = WebDriverWait(driver, 1)
-    # for i, button in enumerate(buttons_which_opens_challenge, start=1):
-    #     content = ""
-    #     if debug:
-    #         print(f"[parseContent] Scrolling challenge button {i} into view...")
-        
-    #     driver.execute_script(
-    #         "arguments[0].scrollIntoView({block: 'center'});",
-    #         button
-    #     )
-
-    #     if debug:
-    #         print(f"[parseContent] Waiting for challenge button {i}...")
-
-    #     wait.until(EC.element_to_be_clickable(button)).click()
-    #     challenge_title_span = find_required_element_helper(
-    #         button,
-    #         By.TAG_NAME,
-    #         "span",
-    #         """
-    #         The span which contains the challenge title wasn't found inside the button.
-    #         """)
-    #     challenge_title = challenge_title_span.text.strip()
-    #     print(challenge_title)
-    #     all_paragraph_elements = find_required_elements_helper(
-    #         button.find_element(By.XPATH, "ancestor::div[contains(@class, 'accordion-item')][1]"),
-    #         By.TAG_NAME,
-    #         "p",
-    #         """
-    #         The paragraphs element inside the 'accordion-item' class div doesn't exist, or that
-    #         div isn't a precedding element of the button.
-    #         """
-    #     )
-    #     for paragraph in all_paragraph_elements:
-    #         content += paragraph.text.strip() + '\n'  
-        
-    #     print(content)
-    #     if debug:
-    #         print(f"[parseContent] Challenge button {i} clicked.")
-    #         print(f"[parseContent] Challenge button {i} dropdown opened.")
-
-    # if debug:
-    #     print("[parseContent] Finished opening challenge dropdowns.")
-    #     print("-" * 55)
+    
 
 
 
@@ -695,8 +609,7 @@ def master(
 
 
     for index, href in selectedHrefs.items():
-        count = parseContent(href, debug)
-    print(count)
+        parseContent(href, debug)
 
     if driverStarted:
         if debug:
@@ -713,9 +626,9 @@ def master(
 
 
 master(
-    createJson=False,
+    createJson=True,
     checkInTerminal=True,
     debug=True,
     parseHrefsAgain=False,
-    
+    indicesToParse={"3.3"}
 )
