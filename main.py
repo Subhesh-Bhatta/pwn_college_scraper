@@ -8,6 +8,8 @@ import json
 import os
 from bs4 import BeautifulSoup
 import requests
+from pathlib import Path
+import re
 
 
 def start(url, debug: bool = False):
@@ -467,8 +469,9 @@ def buildHrefLookup(pwnTree: dict[str, dict], debug: bool = True, checkInTermina
     return moduleLookup
 
 
-def parseContent(href: str, debug: bool = True):
-    content = ""
+def parseContent(href: str, moduleData: dict, debug: bool = True):
+    all_content = []
+
     if debug:
         print("[parseContent] Fetching module page...")
         print(f"[parseContent] URL: {href}")
@@ -491,11 +494,9 @@ def parseContent(href: str, debug: bool = True):
         if debug:
             print("[parseContent] No accordion found. This page has no challenges.")
             print("[parseContent] Skipping this page.")
-        return
 
-    if debug:
-        print("[parseContent] Accordion container found.")
-        print("[parseContent] Searching for accordion items...")
+        moduleData["contents"]["content"] = ""
+        return
 
     challenge_elements = challenge_div.find_all(
         "div",
@@ -533,16 +534,10 @@ def parseContent(href: str, debug: bool = True):
             class_="accordion-item-body"
         )
 
-        if debug:
-            print(f"[parseContent] Challenge title: {challenge_title}")
-
         if challenge_body_element is None:
             if debug:
                 print(f"[parseContent] Challenge {i} has no body. Skipping.")
             continue
-
-        if debug:
-            print(f"[parseContent] Extracting content from challenge {i}...")
 
         content_parts = []
 
@@ -559,23 +554,50 @@ def parseContent(href: str, debug: bool = True):
 
         content = "\n\n".join(content_parts)
 
-        print(f"\n{challenge_title}")
-        print("-" * len(challenge_title))
-        print("\n\n\n")
-        print(content)
-        
+        all_content.append(
+            f"{challenge_title}\n"
+            f"{'-' * len(challenge_title)}\n"
+            f"{content}"
+        )
 
         if debug:
             print(f"[parseContent] Finished processing challenge {i}.")
 
+    # Storing the combined content directly in pwnTree.
+    moduleData["contents"]["content"] = "\n\n\n".join(all_content)
+
     if debug:
         print("[parseContent] Finished processing all challenges.")
         print("-" * 55)
-
-    return content
     
+def createOutputFileStructure(
+    pwnTree: dict,
+    output_dir: str = "pwn_scraped_output",
+    debug: bool = True
+):
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
 
+    for dojo_name, dojo_data in pwnTree.items():
+        safe_dojo_name = re.sub(r'[<>:"/\\|?*]', "_", dojo_name)
+        dojo_path = output_path / safe_dojo_name
+        dojo_path.mkdir(parents=True, exist_ok=True)
 
+        for module_name, module_data in dojo_data["modules"].items():
+            safe_module_name = re.sub(r'[<>:"/\\|?*]', "_", module_name)
+            module_path = dojo_path / safe_module_name
+            module_path.mkdir(parents=True, exist_ok=True)
+
+            content = module_data["contents"].get("content", "")
+
+            content_file = module_path / "content.txt"
+            content_file.write_text(content, encoding="utf-8")
+
+            if debug:
+                print(f"[createOutputFileStructure] Saved: {content_file}")
+
+    if debug:
+        print("[createOutputFileStructure] Finished creating output files.")
 
 
 
@@ -677,7 +699,7 @@ def master(
 
 
     for index, href in selectedHrefs.items():
-        parseContent(href, debug)
+        content = parseContent(href, debug)
 
     if driverStarted:
         if debug:
