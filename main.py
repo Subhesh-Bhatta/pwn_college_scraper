@@ -614,13 +614,27 @@ def parseContent(href: str, moduleData: dict, debug: bool = True):
         print("[parseContent] Finished processing all challenges.")
         print("-" * 55)
     
+
+
 def createOutputFileStructure(
     pwnTree: dict,
     output_dir: str = "pwn_scraped_output",
-    debug: bool = True
+    debug: bool = True,
+    loadJson: bool = False
 ):
+    if loadJson:
+        with open("Check/pwnTree.json", "r", encoding="utf-8") as file:
+            pwnTree = json.load(file)
+
+        if debug:
+            print("[createOutputFileStructure] Loaded pwnTree.json.")
+
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
+
+    filesCreated = 0
+    filesUpdated = 0
+    filesUnchanged = 0
 
     for dojo_name, dojo_data in pwnTree.items():
         safe_dojo_name = re.sub(r'[<>:"/\\|?*]', "_", dojo_name)
@@ -629,19 +643,40 @@ def createOutputFileStructure(
 
         for module_name, module_data in dojo_data["modules"].items():
             safe_module_name = re.sub(r'[<>:"/\\|?*]', "_", module_name)
-            module_path = dojo_path / safe_module_name
-            module_path.mkdir(parents=True, exist_ok=True)
+            content_file = dojo_path / f"{safe_module_name}.txt"
 
-            content = module_data["contents"].get("content", "")
+            content = module_data.get("contents", {}).get("content", "")
 
-            content_file = module_path / "content.txt"
+            if content_file.exists():
+                existing_content = content_file.read_text(encoding="utf-8")
+
+                if existing_content == content:
+                    filesUnchanged += 1
+
+                    if debug:
+                        print(
+                            f"[createOutputFileStructure] Unchanged: "
+                            f"{content_file}"
+                        )
+
+                    continue
+
+                filesUpdated += 1
+            else:
+                filesCreated += 1
+
             content_file.write_text(content, encoding="utf-8")
 
             if debug:
-                print(f"[createOutputFileStructure] Saved: {content_file}")
+                print(
+                    f"[createOutputFileStructure] Saved: {content_file}"
+                )
 
     if debug:
-        print("[createOutputFileStructure] Finished creating output files.")
+        print("[createOutputFileStructure] Finished updating output files.")
+        print(f"[createOutputFileStructure] Files created: {filesCreated}")
+        print(f"[createOutputFileStructure] Files updated: {filesUpdated}")
+        print(f"[createOutputFileStructure] Files unchanged: {filesUnchanged}")
 
 
 
@@ -810,7 +845,11 @@ pwnTree = master(
     checkInTerminal=True,
     debug=True,
     parseHrefsAgain=False,
-    parseContentAgain=True,
+    parseContentAgain=False,
     # indicesToParse,
     previewContentLength=500
 )
+
+createOutputFileStructure(pwnTree, debug=True, loadJson=True)
+
+#took 5 mins to store all the contents in json (href parsing not included)
