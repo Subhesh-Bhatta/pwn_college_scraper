@@ -853,3 +853,4 @@ pwnTree = master(
 createOutputFileStructure(pwnTree, debug=True, loadJson=True)
 
 #took 5 mins to store all the contents in json (href parsing not included)
+#less than 1 min to conver the json to files
