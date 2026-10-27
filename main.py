@@ -811,6 +811,6 @@ pwnTree = master(
     debug=True,
     parseHrefsAgain=False,
     parseContentAgain=True,
-    indicesToParse={"3"},
+    # indicesToParse,
     previewContentLength=500
 )
