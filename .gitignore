@@ -6,4 +6,8 @@ env/
 
 #Output folder
 
-pwm_scraped_output
+pwm_scraped_output/
+
+#Data strucuture folder
+
+Check/
