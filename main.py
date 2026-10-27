@@ -2,7 +2,6 @@ import time
 from selenium import webdriver
 from urllib.parse import urlparse, unquote
 from selenium.webdriver.common.by import By
-from bs4 import BeautifulSoup
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementNotInteractableException
 from selenium.webdriver.support.ui import WebDriverWait
